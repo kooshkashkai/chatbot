@@ -2,11 +2,13 @@ import streamlit as st
 from llama_index import VectorStoreIndex, ServiceContext, Document
 from llama_index.llms import OpenAI
 import openai
-from llama_index import SimpleDirectoryReader
+#from llama_index import SimpleDirectoryReader
 from llama_index import download_loader
 import os
 import requests
 from bs4 import BeautifulSoup
+
+SimpleWebPageReader = download_loader("SimpleWebPageReader")
 
 openai.api_key = st.secrets.openai_key
 
@@ -29,9 +31,10 @@ if "messages" not in st.session_state.keys(): # Initialize the chat message hist
     ]
 
 @st.cache_resource(show_spinner=False)
+
 def load_data():
     with st.spinner(text="Loading and indexing the Xplain docs..."):
-        SimpleWebPageReader = download_loader("SimpleWebPageReader")
+        #SimpleWebPageReader = download_loader("SimpleWebPageReader")
         loader = SimpleWebPageReader()
         docs = loader.load_data(urls=urls)
         service_context = ServiceContext.from_defaults(llm=OpenAI(model="gpt-3.5-turbo", temperature=0.5, system_prompt="You are an expert on the Xplain docs and your job is to answer technical questions. Assume that all questions are related to the Xplain docs. Give full details in your answers rather than referring to the Xplain docs. Keep your answers technical and based on facts – do not hallucinate features."))
