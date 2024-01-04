@@ -5,23 +5,36 @@ import openai
 from llama_index import SimpleDirectoryReader
 from llama_index import download_loader
 import os
+import requests
+from bs4 import BeautifulSoup
 
 openai.api_key = st.secrets.openai_key
 
-st.header("Chat with the Explain docs 💬 🧐 🐶")
+# Get sub url's from website:
+url = 'https://solumxplain.github.io/docs.xplainfinancial/'
+reqs = requests.get(url)
+soup = BeautifulSoup(reqs.text, 'html.parser')
+ 
+urls = []
+for link in soup.find_all('a'):
+    urls.append(link.get('href'))
+urls = ['https://solumxplain.github.io' + s for s in urls if s[0:1] != "#"]
+
+
+st.header("Xplain docs interactive chatbot 💬 🧐 🐶")
 
 if "messages" not in st.session_state.keys(): # Initialize the chat message history
     st.session_state.messages = [
-        {"role": "assistant", "content": "Ask me a question about Explain!"}
+        {"role": "assistant", "content": "Ask me a question about Xplain!"}
     ]
 
 @st.cache_resource(show_spinner=False)
 def load_data():
-    with st.spinner(text="Loading and indexing the Explain docs – hang tight! This should take 1-2 minutes."):
+    with st.spinner(text="Loading and indexing the Xplain docs..."):
         SimpleWebPageReader = download_loader("SimpleWebPageReader")
         loader = SimpleWebPageReader()
-        docs = loader.load_data(urls=['https://solumxplain.github.io/docs.xplainfinancial/'])
-        service_context = ServiceContext.from_defaults(llm=OpenAI(model="gpt-3.5-turbo", temperature=0.5, system_prompt="You are an expert on the Explain docs and your job is to answer technical questions. Assume that all questions are related to the Explain docs. Keep your answers technical and based on facts – do not hallucinate features."))
+        docs = loader.load_data(urls=urls)
+        service_context = ServiceContext.from_defaults(llm=OpenAI(model="gpt-3.5-turbo", temperature=0.5, system_prompt="You are an expert on the Xplain docs and your job is to answer technical questions. Assume that all questions are related to the Xplain docs. Give full details in your answers rather than referring to the Xplain docs. Keep your answers technical and based on facts – do not hallucinate features."))
         index = VectorStoreIndex.from_documents(docs, service_context=service_context)
         return index
 
@@ -41,7 +54,7 @@ for message in st.session_state.messages: # Display the prior chat messages
 # If last message is not from assistant, generate a new response
 if st.session_state.messages[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
+        with st.spinner("Let me think about that..."):
             response = st.session_state.chat_engine.chat(prompt)
             st.write(response.response)
             message = {"role": "assistant", "content": response.response}
