@@ -3,7 +3,7 @@ from llama_index import VectorStoreIndex, ServiceContext, Document
 from llama_index.llms import OpenAI
 import openai
 from llama_index import SimpleDirectoryReader
-from llama_index.readers import download_loader
+#from llama_index.readers import download_loader
 import os
 import requests
 from bs4 import BeautifulSoup
